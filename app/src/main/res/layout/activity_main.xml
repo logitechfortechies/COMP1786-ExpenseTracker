@@ -129,7 +129,7 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@android:drawable/ic_menu_agenda"
+                            android:src="@drawable/ic_business_center"
                             app:tint="@color/colorPurple" />
 
                         <TextView
@@ -166,7 +166,7 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@android:drawable/ic_menu_search"
+                            android:src="@drawable/ic_filter_list"
                             app:tint="@color/colorAmber" />
 
                         <TextView
@@ -203,7 +203,7 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@android:drawable/ic_menu_upload"
+                            android:src="@drawable/ic_cloud_sync"
                             app:tint="@color/colorBlue" />
 
                         <TextView

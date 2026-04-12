@@ -7,8 +7,9 @@ const path       = require('path');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(bodyParser.json());
+// Restrict CORS to specific origins
+app.use(cors({ origin: 'http://localhost:3001' }));
+app.use(express.json()); // Replace bodyParser.json()
 
 // SQLite server-side database
 const db = new Database(path.join(__dirname, 'expense_tracker.db'));
@@ -90,7 +91,7 @@ app.put('/api/projects/:id', (req, res) => {
     const { project_code, project_name, description, start_date, end_date,
             manager, status, budget, special_requirements,
             client_info, additional_info } = req.body;
-    db.prepare(`
+    const result = db.prepare(`
       UPDATE projects SET
         project_code=?, project_name=?, description=?, start_date=?, end_date=?,
         manager=?, status=?, budget=?, special_requirements=?,
@@ -99,13 +100,15 @@ app.put('/api/projects/:id', (req, res) => {
     `).run(project_code, project_name, description, start_date, end_date,
            manager, status, budget, special_requirements,
            client_info, additional_info, req.params.id);
+    if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
     res.json({ id: parseInt(req.params.id), ...req.body });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.delete('/api/projects/:id', (req, res) => {
   try {
-    db.prepare('DELETE FROM projects WHERE id = ?').run(req.params.id);
+    const result = db.prepare('DELETE FROM projects WHERE id = ?').run(req.params.id);
+    if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Deleted' });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -133,6 +136,16 @@ app.post('/api/expenses', (req, res) => {
   try {
     const { project_id, expense_code, date, amount, currency, type,
             payment_method, claimant, payment_status, description, location } = req.body;
+    
+    if (!project_id || !expense_code || !amount) {
+      return res.status(400).json({ error: 'Required fields missing' });
+    }
+    
+    // Validate amount is a number
+    if (typeof amount !== 'number' || amount <= 0) {
+      return res.status(400).json({ error: 'Amount must be a positive number' });
+    }
+    
     const result = db.prepare(`
       INSERT INTO expenses
         (project_id, expense_code, date, amount, currency, type,
@@ -141,6 +154,32 @@ app.post('/api/expenses', (req, res) => {
     `).run(project_id, expense_code, date, amount, currency, type,
            payment_method, claimant, payment_status, description, location);
     res.status(201).json({ id: result.lastInsertRowid, ...req.body });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put('/api/expenses/:id', (req, res) => {
+  try {
+    const { project_id, expense_code, date, amount, currency, type,
+            payment_method, claimant, payment_status, description, location } = req.body;
+    
+    const result = db.prepare(`
+      UPDATE expenses SET
+        project_id=?, expense_code=?, date=?, amount=?, currency=?, type=?,
+        payment_method=?, claimant=?, payment_status=?, description=?, location=?
+      WHERE id=?
+    `).run(project_id, expense_code, date, amount, currency, type,
+           payment_method, claimant, payment_status, description, location, req.params.id);
+    
+    if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
+    res.json({ id: parseInt(req.params.id), ...req.body });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/expenses/:id', (req, res) => {
+  try {
+    const result = db.prepare('DELETE FROM expenses WHERE id = ?').run(req.params.id);
+    if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
+    res.json({ message: 'Deleted' });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
