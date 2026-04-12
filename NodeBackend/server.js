@@ -7,9 +7,8 @@ const path       = require('path');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// Restrict CORS to specific origins
-app.use(cors({ origin: 'http://localhost:3001' }));
-app.use(express.json()); // Replace bodyParser.json()
+app.use(cors());
+app.use(express.json()); 
 
 // SQLite server-side database
 const db = new Database(path.join(__dirname, 'expense_tracker.db'));
