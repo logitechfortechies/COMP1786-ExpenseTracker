@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Modern Primary palette -->
+    <color name="colorPrimary">#6366F1</color>
+    <color name="colorPrimaryVariant">#4F46E5</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+
+    <!-- Refined Background layers -->
+    <color name="colorBackground">#F8FAFC</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorSurfaceVariant">#F1F5F9</color>
+
+    <!-- Improved Text -->
+    <color name="colorOnBackground">#0F172A</color>
+    <color name="colorOnSurface">#1E293B</color>
+    <color name="colorMuted">#64748B</color>
+
+    <!-- Vibrant Semantic colors -->
+    <color name="colorAmber">#F59E0B</color>
+    <color name="colorGreen">#10B981</color>
+    <color name="colorRed">#EF4444</color>
+    <color name="colorBlue">#3B82F6</color>
+    <color name="colorPurple">#8B5CF6</color>
+
+    <!-- Status chip backgrounds (soft) -->
+    <color name="colorActiveChip">#D1FAE5</color>
+    <color name="colorOnHoldChip">#FEF3C7</color>
+    <color name="colorCompletedChip">#DBEAFE</color>
+
+    <!-- Secondary -->
+    <color name="colorSecondary">#EC4899</color>
+    <color name="colorOnSecondary">#FFFFFF</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+</resources>
