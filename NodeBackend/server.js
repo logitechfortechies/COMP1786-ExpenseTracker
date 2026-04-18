@@ -1,193 +1,73 @@
-const express    = require('express');
-const cors       = require('cors');
+const express = require('express');
 const bodyParser = require('body-parser');
-const Database   = require('better-sqlite3');
-const path       = require('path');
+const cors = require('cors');
 
-const app  = express();
-const PORT = process.env.PORT || 3000;
+const app = express();
+const PORT = 3000;
 
 app.use(cors());
-app.use(express.json()); 
+app.use(bodyParser.json());
 
-// SQLite server-side database
-const db = new Database(path.join(__dirname, 'expense_tracker.db'));
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS projects (
-    id                   INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_code         TEXT NOT NULL,
-    project_name         TEXT NOT NULL,
-    description          TEXT NOT NULL,
-    start_date           TEXT NOT NULL,
-    end_date             TEXT NOT NULL,
-    manager              TEXT NOT NULL,
-    status               TEXT NOT NULL,
-    budget               REAL NOT NULL,
-    special_requirements TEXT,
-    client_info          TEXT,
-    additional_info      TEXT,
-    created_at           DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE TABLE IF NOT EXISTS expenses (
-    id             INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id     INTEGER NOT NULL,
-    expense_code   TEXT NOT NULL,
-    date           TEXT NOT NULL,
-    amount         REAL NOT NULL,
-    currency       TEXT NOT NULL,
-    type           TEXT NOT NULL,
-    payment_method TEXT NOT NULL,
-    claimant       TEXT NOT NULL,
-    payment_status TEXT NOT NULL,
-    description    TEXT,
-    location       TEXT,
-    created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-  );
-`);
-
-// ── PROJECT ROUTES ──────────────────────────────────────────
-
-app.get('/api/projects', (req, res) => {
-  try {
-    res.json(db.prepare('SELECT * FROM projects ORDER BY project_name').all());
-  } catch (err) { res.status(500).json({ error: err.message }); }
+let projects = [];
+let expenses = [];
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
 });
 
-app.get('/api/projects/:id', (req, res) => {
-  try {
-    const p = db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
-    if (!p) return res.status(404).json({ error: 'Not found' });
-    res.json(p);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+// --- Project Endpoints ---
+
+// POST: Upload a new project
+app.post('/projects', (req, res) => {
+    const project = req.body;
+    // Basic ID generation for demo
+    if (!project.id) project.id = projects.length + 1;
+    projects.push(project);
+    console.log("Project Uploaded:", project.projectName);
+    res.status(201).json(project);
 });
 
-app.post('/api/projects', (req, res) => {
-  try {
-    const { project_code, project_name, description, start_date, end_date,
-            manager, status, budget, special_requirements,
-            client_info, additional_info } = req.body;
-    if (!project_code || !project_name) {
-      return res.status(400).json({ error: 'Required fields missing' });
+// PUT: Update existing project
+app.put('/projects/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = projects.findIndex(p => p.id === id);
+    if (index !== -1) {
+        projects[index] = { ...projects[index], ...req.body };
+        res.json(projects[index]);
+    } else {
+        res.status(404).json({ message: "Project not found" });
     }
-    const result = db.prepare(`
-      INSERT INTO projects
-        (project_code, project_name, description, start_date, end_date,
-         manager, status, budget, special_requirements, client_info, additional_info)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(project_code, project_name, description, start_date, end_date,
-           manager, status, budget, special_requirements, client_info, additional_info);
-    res.status(201).json({ id: result.lastInsertRowid, ...req.body });
-  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.put('/api/projects/:id', (req, res) => {
-  try {
-    const { project_code, project_name, description, start_date, end_date,
-            manager, status, budget, special_requirements,
-            client_info, additional_info } = req.body;
-    const result = db.prepare(`
-      UPDATE projects SET
-        project_code=?, project_name=?, description=?, start_date=?, end_date=?,
-        manager=?, status=?, budget=?, special_requirements=?,
-        client_info=?, additional_info=?
-      WHERE id=?
-    `).run(project_code, project_name, description, start_date, end_date,
-           manager, status, budget, special_requirements,
-           client_info, additional_info, req.params.id);
-    if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
-    res.json({ id: parseInt(req.params.id), ...req.body });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+// GET: Get all projects
+app.get('/projects', (req, res) => {
+    res.json(projects);
 });
 
-app.delete('/api/projects/:id', (req, res) => {
-  try {
-    const result = db.prepare('DELETE FROM projects WHERE id = ?').run(req.params.id);
-    if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
-    res.json({ message: 'Deleted' });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+// --- Expense Endpoints ---
+
+// POST: Upload a new expense
+app.post('/expenses', (req, res) => {
+    const expense = req.body;
+    if (!expense.id) expense.id = expenses.length + 1;
+    expenses.push(expense);
+    console.log("Expense Uploaded:", expense.expenseCode, "for Project ID:", expense.projectId);
+    res.status(201).json(expense);
 });
 
-app.get('/api/projects/search/:keyword', (req, res) => {
-  try {
-    const like = '%' + req.params.keyword + '%';
-    res.json(db.prepare(
-      'SELECT * FROM projects WHERE project_name LIKE ? OR description LIKE ?'
-    ).all(like, like));
-  } catch (err) { res.status(500).json({ error: err.message }); }
+// GET: Get expenses for a specific project
+app.get('/projects/:id/expenses', (req, res) => {
+    const projectId = parseInt(req.params.id);
+    const filtered = expenses.filter(e => e.projectId === projectId);
+    res.json(filtered);
 });
 
-// ── EXPENSE ROUTES ──────────────────────────────────────────
-
-app.get('/api/projects/:id/expenses', (req, res) => {
-  try {
-    res.json(db.prepare(
-      'SELECT * FROM expenses WHERE project_id = ? ORDER BY date DESC'
-    ).all(req.params.id));
-  } catch (err) { res.status(500).json({ error: err.message }); }
+// Health Check
+app.get('/', (req, res) => {
+    res.send('Expense Tracker Backend is Running!');
 });
 
-app.post('/api/expenses', (req, res) => {
-  try {
-    const { project_id, expense_code, date, amount, currency, type,
-            payment_method, claimant, payment_status, description, location } = req.body;
-    
-    if (!project_id || !expense_code || !amount) {
-      return res.status(400).json({ error: 'Required fields missing' });
-    }
-    
-    // Validate amount is a number
-    if (typeof amount !== 'number' || amount <= 0) {
-      return res.status(400).json({ error: 'Amount must be a positive number' });
-    }
-    
-    const result = db.prepare(`
-      INSERT INTO expenses
-        (project_id, expense_code, date, amount, currency, type,
-         payment_method, claimant, payment_status, description, location)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(project_id, expense_code, date, amount, currency, type,
-           payment_method, claimant, payment_status, description, location);
-    res.status(201).json({ id: result.lastInsertRowid, ...req.body });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-app.put('/api/expenses/:id', (req, res) => {
-  try {
-    const { project_id, expense_code, date, amount, currency, type,
-            payment_method, claimant, payment_status, description, location } = req.body;
-    
-    const result = db.prepare(`
-      UPDATE expenses SET
-        project_id=?, expense_code=?, date=?, amount=?, currency=?, type=?,
-        payment_method=?, claimant=?, payment_status=?, description=?, location=?
-      WHERE id=?
-    `).run(project_id, expense_code, date, amount, currency, type,
-           payment_method, claimant, payment_status, description, location, req.params.id);
-    
-    if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
-    res.json({ id: parseInt(req.params.id), ...req.body });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-app.delete('/api/expenses/:id', (req, res) => {
-  try {
-    const result = db.prepare('DELETE FROM expenses WHERE id = ?').run(req.params.id);
-    if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
-    res.json({ message: 'Deleted' });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// ── Start ───────────────────────────────────────────────────
-
-app.listen(PORT, () => {
-  console.log(`✅  Expense Tracker API running → http://localhost:${PORT}`);
-  console.log(`     GET  /api/projects`);
-  console.log(`     POST /api/projects`);
-  console.log(`     GET  /api/projects/:id/expenses`);
-  console.log(`     POST /api/expenses`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`For Android Emulator, use: http://10.0.2.2:${PORT}`);
 });

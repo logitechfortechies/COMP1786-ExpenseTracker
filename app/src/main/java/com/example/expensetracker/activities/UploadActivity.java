@@ -1,10 +1,13 @@
 package com.example.expensetracker.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.expensetracker.R;
 import com.example.expensetracker.database.DatabaseHelper;
 import com.example.expensetracker.models.Expense;
@@ -12,20 +15,26 @@ import com.example.expensetracker.models.Project;
 import com.example.expensetracker.network.ApiClient;
 import com.example.expensetracker.network.ApiService;
 import com.example.expensetracker.utils.NetworkUtils;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
+
 import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
 public class UploadActivity extends AppCompatActivity {
 
     private MaterialButton btnUpload;
     private ProgressBar progressBar;
-    private TextView tvStatus;   // FIX: was referenced as tvUploadStatus in old document
+    private TextView tvStatus;
     private DatabaseHelper db;
     private ApiService api;
-    private int totalToUpload = 0, uploadedCount = 0;
+    private BottomNavigationView bottomNav;
+    private int totalToUpload = 0;
+    private int uploadedCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,29 +42,52 @@ public class UploadActivity extends AppCompatActivity {
         setContentView(R.layout.activity_upload);
         setTitle("Upload to Cloud");
 
-        db  = new DatabaseHelper(this);
+        db = new DatabaseHelper(this);
         api = ApiClient.getService();
 
-        btnUpload   = findViewById(R.id.btnUpload);
+        btnUpload = findViewById(R.id.btnUpload);
         progressBar = findViewById(R.id.progressBar);
-        // FIX: correct ID matching the layout XML
-        tvStatus    = findViewById(R.id.tvStatus);
+        tvStatus = findViewById(R.id.tvStatus);
 
         updatePendingCount();
 
         btnUpload.setOnClickListener(v -> {
             if (!NetworkUtils.isConnected(this)) {
-                Snackbar.make(v, "No internet connection. Check your network.",
-                        Snackbar.LENGTH_LONG).show();
+                Snackbar.make(v, "No internet connection. Check your network.", Snackbar.LENGTH_LONG).show();
                 return;
             }
             startUpload();
         });
+
+        setupBottomNav();
+    }
+
+    private void setupBottomNav() {
+        bottomNav = findViewById(R.id.bottomNavigation);
+        bottomNav.setSelectedItemId(R.id.nav_sync);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_projects) {
+                startActivity(new Intent(this, ProjectListActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_search) {
+                startActivity(new Intent(this, SearchActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_sync) {
+                return true;
+            }
+            return false;
+        });
     }
 
     private void updatePendingCount() {
-        int pending = db.getUnsyncedProjects().size()
-                + db.getUnsyncedExpenses().size();
+        int pending = db.getUnsyncedProjects().size() + db.getUnsyncedExpenses().size();
         tvStatus.setText(pending + " item(s) pending upload");
     }
 
@@ -75,17 +107,24 @@ public class UploadActivity extends AppCompatActivity {
         progressBar.setMax(totalToUpload);
         tvStatus.setText("Uploading...");
 
-        for (Project p : projects) uploadProject(p);
-        for (Expense e : expenses) uploadExpense(e);
+        for (Project p : projects) {
+            uploadProject(p);
+        }
+        for (Expense e : expenses) {
+            uploadExpense(e);
+        }
     }
 
     private void uploadProject(Project p) {
         api.uploadProject(p).enqueue(new Callback<Project>() {
             @Override
             public void onResponse(Call<Project> call, Response<Project> response) {
-                if (response.isSuccessful()) db.markProjectSynced(p.getId());
+                if (response.isSuccessful()) {
+                    db.markProjectSynced(p.getId());
+                }
                 onItemDone();
             }
+
             @Override
             public void onFailure(Call<Project> call, Throwable t) {
                 tvStatus.setText("Error: " + t.getMessage());
@@ -98,11 +137,16 @@ public class UploadActivity extends AppCompatActivity {
         api.uploadExpense(e).enqueue(new Callback<Expense>() {
             @Override
             public void onResponse(Call<Expense> call, Response<Expense> response) {
-                if (response.isSuccessful()) db.markExpenseSynced(e.getId());
+                if (response.isSuccessful()) {
+                    db.markExpenseSynced(e.getId());
+                }
                 onItemDone();
             }
+
             @Override
-            public void onFailure(Call<Expense> call, Throwable t) { onItemDone(); }
+            public void onFailure(Call<Expense> call, Throwable t) {
+                onItemDone();
+            }
         });
     }
 

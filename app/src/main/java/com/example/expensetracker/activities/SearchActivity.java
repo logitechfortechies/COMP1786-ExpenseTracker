@@ -16,6 +16,7 @@ import com.example.expensetracker.R;
 import com.example.expensetracker.adapters.ProjectAdapter;
 import com.example.expensetracker.database.DatabaseHelper;
 import com.example.expensetracker.models.Project;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import java.util.Calendar;
@@ -31,6 +32,7 @@ public class SearchActivity extends AppCompatActivity
     private View advancedPanel;
     private DatabaseHelper db;
     private ProjectAdapter adapter;
+    private BottomNavigationView bottomNav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,13 +40,13 @@ public class SearchActivity extends AppCompatActivity
         setContentView(R.layout.activity_search);
         setupToolbar();
 
-        db            = new DatabaseHelper(this);
-        etSearch      = findViewById(R.id.etSearch);
-        etFromDate    = findViewById(R.id.etFromDate);
-        etToDate      = findViewById(R.id.etToDate);
+        db = new DatabaseHelper(this);
+        etSearch = findViewById(R.id.etSearch);
+        etFromDate = findViewById(R.id.etFromDate);
+        etToDate = findViewById(R.id.etToDate);
         etManagerFilter = findViewById(R.id.etManagerSearch);
-        spStatus      = findViewById(R.id.spStatusSearch);
-        recycler      = findViewById(R.id.recyclerSearch);
+        spStatus = findViewById(R.id.spStatusSearch);
+        recycler = findViewById(R.id.recyclerSearch);
         tvResultCount = findViewById(R.id.tvResultCount);
         advancedPanel = findViewById(R.id.advancedPanel);
 
@@ -54,14 +56,12 @@ public class SearchActivity extends AppCompatActivity
                 android.R.layout.simple_dropdown_item_1line,
                 new String[]{"", "Active", "Completed", "On Hold"}));
 
-        // Live search on every keystroke
         etSearch.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
             public void onTextChanged(CharSequence s, int a, int b, int c) { doSearch(); }
             public void afterTextChanged(Editable s) {}
         });
 
-        // FIX: date pickers use Calendar.getInstance() — not hardcoded 2024
         etFromDate.setFocusable(false);
         etToDate.setFocusable(false);
         etFromDate.setOnClickListener(v -> pickDate(etFromDate));
@@ -77,7 +77,32 @@ public class SearchActivity extends AppCompatActivity
         findViewById(R.id.btnAdvancedSearch).setOnClickListener(v -> doAdvancedSearch());
         findViewById(R.id.btnClearFilters).setOnClickListener(v -> clearFilters());
 
-        doSearch(); // show all on first load
+        setupBottomNav();
+        doSearch();
+    }
+
+    private void setupBottomNav() {
+        bottomNav = findViewById(R.id.bottomNavigation);
+        bottomNav.setSelectedItemId(R.id.nav_search);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_projects) {
+                startActivity(new Intent(this, ProjectListActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_search) {
+                return true;
+            } else if (id == R.id.nav_sync) {
+                startActivity(new Intent(this, UploadActivity.class));
+                finish();
+                return true;
+            }
+            return false;
+        });
     }
 
     private void setupToolbar() {

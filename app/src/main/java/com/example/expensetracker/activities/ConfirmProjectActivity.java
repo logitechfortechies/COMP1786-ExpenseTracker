@@ -51,8 +51,19 @@ public class ConfirmProjectActivity extends AppCompatActivity {
 
         btnConfirm.setOnClickListener(v -> {
             DatabaseHelper db = new DatabaseHelper(this);
-            Project p = new Project(code, name, desc, start, end,
-                    mgr, status, budget, special, client, addInfo);
+            Project p = new Project();
+            p.setProjectCode(code);
+            p.setProjectName(name);
+            p.setDescription(desc);
+            p.setStartDate(start);
+            p.setEndDate(end);
+            p.setManager(mgr);
+            p.setStatus(status);
+            p.setBudget(budget);
+            p.setSpecialRequirements(special);
+            p.setClientInfo(client);
+            p.setAdditionalInfo(addInfo);
+            p.setSynced(0);
 
             if (editId != -1) {
                 p.setId(editId);

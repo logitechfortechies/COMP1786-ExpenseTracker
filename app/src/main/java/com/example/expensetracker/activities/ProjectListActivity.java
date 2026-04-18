@@ -16,18 +16,18 @@ import com.example.expensetracker.R;
 import com.example.expensetracker.adapters.ProjectAdapter;
 import com.example.expensetracker.database.DatabaseHelper;
 import com.example.expensetracker.models.Project;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import java.util.List;
 
-public class ProjectListActivity extends AppCompatActivity
-        implements ProjectAdapter.ProjectClickListener {
-
+public class ProjectListActivity extends AppCompatActivity implements ProjectAdapter.ProjectClickListener {
     private RecyclerView recyclerView;
     private ProjectAdapter adapter;
     private DatabaseHelper db;
     private View tvEmpty;
     private EditText etSearch;
+    private BottomNavigationView bottomNav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,16 +36,40 @@ public class ProjectListActivity extends AppCompatActivity
 
         db = new DatabaseHelper(this);
         recyclerView = findViewById(R.id.recyclerProjects);
-        tvEmpty      = findViewById(R.id.tvEmpty);
-        etSearch     = findViewById(R.id.etSearch);
+        tvEmpty = findViewById(R.id.tvEmpty);
+        etSearch = findViewById(R.id.etSearch);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         ExtendedFloatingActionButton fab = findViewById(R.id.fabAddProject);
-        fab.setOnClickListener(v ->
-                startActivity(new Intent(this, AddProjectActivity.class)));
+        fab.setOnClickListener(v -> startActivity(new Intent(this, AddProjectActivity.class)));
 
         setupSearch();
+        setupBottomNav();
+    }
+
+    private void setupBottomNav() {
+        bottomNav = findViewById(R.id.bottomNavigation);
+        bottomNav.setSelectedItemId(R.id.nav_projects);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_projects) {
+                return true;
+            } else if (id == R.id.nav_search) {
+                startActivity(new Intent(this, SearchActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_sync) {
+                startActivity(new Intent(this, UploadActivity.class));
+                finish();
+                return true;
+            }
+            return false;
+        });
     }
 
     private void setupSearch() {
@@ -67,6 +91,9 @@ public class ProjectListActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         loadProjects();
+        if (bottomNav != null) {
+            bottomNav.setSelectedItemId(R.id.nav_projects);
+        }
     }
 
     private void loadProjects() {
@@ -125,8 +152,7 @@ public class ProjectListActivity extends AppCompatActivity
                     .setPositiveButton("Reset", (d, w) -> {
                         db.resetDatabase();
                         loadProjects();
-                        Snackbar.make(recyclerView, "Database cleared",
-                                Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(recyclerView, "Database cleared", Snackbar.LENGTH_SHORT).show();
                     })
                     .setNegativeButton("Cancel", null).show();
             return true;

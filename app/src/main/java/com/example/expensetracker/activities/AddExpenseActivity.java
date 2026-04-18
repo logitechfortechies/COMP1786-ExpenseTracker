@@ -5,8 +5,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import com.example.expensetracker.R;
 import com.example.expensetracker.database.DatabaseHelper;
 import com.example.expensetracker.models.Expense;
@@ -15,12 +15,12 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import java.util.Calendar;
-public class AddExpenseActivity extends AppCompatActivity {
 
-    private static final String[] CURRENCIES   = {"GBP (£)","USD ($)","EUR (€)","JPY (¥)","VND (₫)","Other"};
-    private static final String[] TYPES        = {"Travel","Equipment","Materials","Services","Software/Licenses","Labour costs","Utilities","Miscellaneous"};
-    private static final String[] PAY_METHODS  = {"Cash","Credit Card","Bank Transfer","Cheque"};
-    private static final String[] PAY_STATUSES = {"Paid","Pending","Reimbursed"};
+public class AddExpenseActivity extends AppCompatActivity {
+    private static final String[] CURRENCIES = {"GBP (£)", "USD ($)", "EUR (€)", "JPY (¥)", "VND (₫)", "Other"};
+    private static final String[] TYPES = {"Travel", "Equipment", "Materials", "Services", "Software/Licenses", "Labour costs", "Utilities", "Miscellaneous"};
+    private static final String[] PAY_METHODS = {"Cash", "Credit Card", "Bank Transfer", "Cheque"};
+    private static final String[] PAY_STATUSES = {"Paid", "Pending", "Reimbursed"};
 
     private TextInputEditText etCode, etDate, etAmount, etClaimant, etDesc, etLocation;
     private AutoCompleteTextView spCurrency, spType, spPayMethod, spPayStatus;
@@ -65,35 +65,30 @@ public class AddExpenseActivity extends AppCompatActivity {
     }
 
     private void bindViews() {
-        etCode      = findViewById(R.id.etExpenseCode);
-        etDate      = findViewById(R.id.etExpenseDate);
-        etAmount    = findViewById(R.id.etAmount);
-        spCurrency  = findViewById(R.id.spCurrency);
-        spType      = findViewById(R.id.spType);
+        etCode = findViewById(R.id.etExpenseCode);
+        etDate = findViewById(R.id.etExpenseDate);
+        etAmount = findViewById(R.id.etAmount);
+        spCurrency = findViewById(R.id.spCurrency);
+        spType = findViewById(R.id.spType);
         spPayMethod = findViewById(R.id.spPaymentMethod);
-        etClaimant  = findViewById(R.id.etClaimant);
+        etClaimant = findViewById(R.id.etClaimant);
         spPayStatus = findViewById(R.id.spPaymentStatus);
-        etDesc      = findViewById(R.id.etExpenseDesc);
-        etLocation  = findViewById(R.id.etLocation);
-        btnSave     = findViewById(R.id.btnSaveExpense);
+        etDesc = findViewById(R.id.etExpenseDesc);
+        etLocation = findViewById(R.id.etLocation);
+        btnSave = findViewById(R.id.btnSaveExpense);
     }
 
     private void setupSpinners() {
-        spCurrency.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, CURRENCIES));
-        spType.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, TYPES));
-        spPayMethod.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, PAY_METHODS));
-        spPayStatus.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, PAY_STATUSES));
+        spCurrency.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, CURRENCIES));
+        spType.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, TYPES));
+        spPayMethod.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, PAY_METHODS));
+        spPayStatus.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, PAY_STATUSES));
     }
 
     private void pickDate() {
         Calendar cal = Calendar.getInstance();
         new DatePickerDialog(this,
-                (v, y, m, d) -> etDate.setText(
-                        String.format("%04d-%02d-%02d", y, m + 1, d)),
+                (v, y, m, d) -> etDate.setText(String.format("%04d-%02d-%02d", y, m + 1, d)),
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
                 cal.get(Calendar.DAY_OF_MONTH)
@@ -114,19 +109,33 @@ public class AddExpenseActivity extends AppCompatActivity {
     }
 
     private void save() {
-        if (!req(etCode,     "Expense Code is required")) return;
-        if (!req(etDate,     "Date is required"))         return;
-        if (!req(etAmount,   "Amount is required"))       return;
-        if (!req(etClaimant, "Claimant is required"))     return;
-        if (TextUtils.isEmpty(spCurrency.getText()))  { spCurrency.setError("Select currency");       return; }
-        if (TextUtils.isEmpty(spType.getText()))       { spType.setError("Select type");              return; }
-        if (TextUtils.isEmpty(spPayMethod.getText()))  { spPayMethod.setError("Select method");       return; }
-        if (TextUtils.isEmpty(spPayStatus.getText()))  { spPayStatus.setError("Select status");       return; }
+        if (!req(etCode, "Expense Code is required")) return;
+        if (!req(etDate, "Date is required")) return;
+        if (!req(etAmount, "Amount is required")) return;
+        if (!req(etClaimant, "Claimant is required")) return;
+        if (TextUtils.isEmpty(spCurrency.getText())) {
+            spCurrency.setError("Select currency");
+            return;
+        }
+        if (TextUtils.isEmpty(spType.getText())) {
+            spType.setError("Select type");
+            return;
+        }
+        if (TextUtils.isEmpty(spPayMethod.getText())) {
+            spPayMethod.setError("Select method");
+            return;
+        }
+        if (TextUtils.isEmpty(spPayStatus.getText())) {
+            spPayStatus.setError("Select status");
+            return;
+        }
 
         double amount;
-        try { amount = Double.parseDouble(val(etAmount)); }
-        catch (NumberFormatException e) {
-            layout(etAmount).setError("Enter a valid amount"); return;
+        try {
+            amount = Double.parseDouble(val(etAmount));
+        } catch (NumberFormatException e) {
+            layout(etAmount).setError("Enter a valid amount");
+            return;
         }
 
         Expense exp = (editing != null) ? editing : new Expense();
@@ -150,12 +159,18 @@ public class AddExpenseActivity extends AppCompatActivity {
     }
 
     private boolean req(TextInputEditText f, String msg) {
-        if (TextUtils.isEmpty(f.getText())) { layout(f).setError(msg); return false; }
-        layout(f).setError(null); return true;
+        if (TextUtils.isEmpty(f.getText())) {
+            layout(f).setError(msg);
+            return false;
+        }
+        layout(f).setError(null);
+        return true;
     }
+
     private String val(TextInputEditText f) {
         return f.getText() != null ? f.getText().toString().trim() : "";
     }
+
     private TextInputLayout layout(TextInputEditText f) {
         return (TextInputLayout) f.getParent().getParent();
     }

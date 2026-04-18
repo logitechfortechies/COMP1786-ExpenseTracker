@@ -216,8 +216,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Settings/Placeholder -->
+                <!-- Reset Database -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardReset"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_rowWeight="1"
@@ -239,14 +240,14 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@android:drawable/ic_menu_manage"
+                            android:src="@drawable/ic_settings"
                             app:tint="@color/colorMuted" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:text="Settings"
+                            android:text="Reset App"
                             android:textColor="@color/colorOnSurface"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -256,5 +257,13 @@
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/colorSurface"
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

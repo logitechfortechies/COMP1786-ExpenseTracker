@@ -6,14 +6,19 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
 import com.example.expensetracker.R;
 import com.example.expensetracker.database.DatabaseHelper;
 import com.example.expensetracker.models.Project;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+
 import java.util.Calendar;
+
 public class AddProjectActivity extends AppCompatActivity {
 
     private TextInputEditText etCode, etName, etDesc, etStart, etEnd;
@@ -27,10 +32,11 @@ public class AddProjectActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_project);
+
         db = new DatabaseHelper(this);
         bindViews();
 
-        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -41,7 +47,6 @@ public class AddProjectActivity extends AppCompatActivity {
                 android.R.layout.simple_dropdown_item_1line,
                 new String[]{"Active", "Completed", "On Hold"}));
 
-        // Date fields use picker only — no keyboard
         etStart.setFocusable(false);
         etEnd.setFocusable(false);
         etStart.setOnClickListener(v -> pickDate(etStart));
@@ -60,25 +65,24 @@ public class AddProjectActivity extends AppCompatActivity {
     }
 
     private void bindViews() {
-        etCode    = findViewById(R.id.etProjectCode);
-        etName    = findViewById(R.id.etProjectName);
-        etDesc    = findViewById(R.id.etDescription);
-        etStart   = findViewById(R.id.etStartDate);
-        etEnd     = findViewById(R.id.etEndDate);
+        etCode = findViewById(R.id.etProjectCode);
+        etName = findViewById(R.id.etProjectName);
+        etDesc = findViewById(R.id.etDescription);
+        etStart = findViewById(R.id.etStartDate);
+        etEnd = findViewById(R.id.etEndDate);
         etManager = findViewById(R.id.etManager);
-        spStatus  = findViewById(R.id.spinnerStatus);
-        etBudget  = findViewById(R.id.etBudget);
+        spStatus = findViewById(R.id.spinnerStatus);
+        etBudget = findViewById(R.id.etBudget);
         etSpecial = findViewById(R.id.etSpecialReq);
-        etClient  = findViewById(R.id.etClientInfo);
+        etClient = findViewById(R.id.etClientInfo);
         etAddInfo = findViewById(R.id.etAdditionalInfo);
-        btnSave   = findViewById(R.id.btnSave);
+        btnSave = findViewById(R.id.btnSave);
     }
 
     private void pickDate(TextInputEditText target) {
         Calendar cal = Calendar.getInstance();
         new DatePickerDialog(this,
-                (v, year, month, day) ->
-                        target.setText(String.format("%04d-%02d-%02d", year, month + 1, day)),
+                (v, year, month, day) -> target.setText(String.format("%04d-%02d-%02d", year, month + 1, day)),
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
                 cal.get(Calendar.DAY_OF_MONTH)
@@ -100,13 +104,14 @@ public class AddProjectActivity extends AppCompatActivity {
     }
 
     private void validateAndNext() {
-        if (!req(etCode,    "Project Code is required"))    return;
-        if (!req(etName,    "Project Name is required"))    return;
-        if (!req(etDesc,    "Description is required"))     return;
-        if (!req(etStart,   "Start Date is required"))      return;
-        if (!req(etEnd,     "End Date is required"))        return;
-        if (!req(etManager, "Manager name is required"))    return;
-        if (!req(etBudget,  "Budget is required"))          return;
+        if (!req(etCode, "Project Code is required")) return;
+        if (!req(etName, "Project Name is required")) return;
+        if (!req(etDesc, "Description is required")) return;
+        if (!req(etStart, "Start Date is required")) return;
+        if (!req(etEnd, "End Date is required")) return;
+        if (!req(etManager, "Manager name is required")) return;
+        if (!req(etBudget, "Budget is required")) return;
+        
         if (TextUtils.isEmpty(spStatus.getText())) {
             spStatus.setError("Please select a status");
             return;
@@ -121,26 +126,28 @@ public class AddProjectActivity extends AppCompatActivity {
         }
 
         Intent i = new Intent(this, ConfirmProjectActivity.class);
-        i.putExtra("CODE",     val(etCode));
-        i.putExtra("NAME",     val(etName));
-        i.putExtra("DESC",     val(etDesc));
-        i.putExtra("START",    val(etStart));
-        i.putExtra("END",      val(etEnd));
-        i.putExtra("MGR",      val(etManager));
-        i.putExtra("STATUS",   spStatus.getText().toString());
-        i.putExtra("BUDGET",   budget);
-        i.putExtra("SPECIAL",  val(etSpecial));
-        i.putExtra("CLIENT",   val(etClient));
-        i.putExtra("ADDINFO",  val(etAddInfo));
+        i.putExtra("CODE", val(etCode));
+        i.putExtra("NAME", val(etName));
+        i.putExtra("DESC", val(etDesc));
+        i.putExtra("START", val(etStart));
+        i.putExtra("END", val(etEnd));
+        i.putExtra("MGR", val(etManager));
+        i.putExtra("STATUS", spStatus.getText().toString());
+        i.putExtra("BUDGET", budget);
+        i.putExtra("SPECIAL", val(etSpecial));
+        i.putExtra("CLIENT", val(etClient));
+        i.putExtra("ADDINFO", val(etAddInfo));
         if (editing != null) i.putExtra("EDIT_ID", editing.getId());
         startActivity(i);
     }
 
     private boolean req(TextInputEditText f, String msg) {
         if (TextUtils.isEmpty(f.getText())) {
-            layout(f).setError(msg); return false;
+            layout(f).setError(msg);
+            return false;
         }
-        layout(f).setError(null); return true;
+        layout(f).setError(null);
+        return true;
     }
 
     private String val(TextInputEditText f) {
