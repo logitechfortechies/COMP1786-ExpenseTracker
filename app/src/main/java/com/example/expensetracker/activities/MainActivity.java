@@ -16,6 +16,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     private DatabaseHelper db;
@@ -89,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
                 totalBudget += p.getBudget();
             }
         }
-        tvTotalBudget.setText(String.format("£%.2f", totalBudget));
+        tvTotalBudget.setText(String.format(Locale.UK, "£%.2f", totalBudget));
     }
 
     private void showResetConfirmation() {
