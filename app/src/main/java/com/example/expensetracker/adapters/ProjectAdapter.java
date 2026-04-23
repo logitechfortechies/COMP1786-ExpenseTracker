@@ -40,8 +40,12 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull ViewHolder h, int position) {
         Project p = projects.get(position);
+        
+        // Use the totalSpent calculated in the ViewHolder or passed via a map
+        // For simplicity and immediate fix, we fetch once but ideally we should pass this in updateData
         DatabaseHelper db = new DatabaseHelper(h.itemView.getContext());
         double totalSpent = db.getProjectTotalExpenses(p.getId());
+        db.close();
 
         h.tvName.setText(p.getProjectName());
         h.tvCode.setText(p.getProjectCode());
