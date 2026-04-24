@@ -15,6 +15,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import java.util.Calendar;
+import java.util.Locale;
 
 public class AddExpenseActivity extends AppCompatActivity {
     private static final String[] CURRENCIES = {"GBP (£)", "USD ($)", "EUR (€)", "JPY (¥)", "VND (₫)", "Other"};
@@ -61,7 +62,7 @@ public class AddExpenseActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
-        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        toolbar.setNavigationOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
     }
 
     private void bindViews() {
@@ -88,7 +89,7 @@ public class AddExpenseActivity extends AppCompatActivity {
     private void pickDate() {
         Calendar cal = Calendar.getInstance();
         new DatePickerDialog(this,
-                (v, y, m, d) -> etDate.setText(String.format("%04d-%02d-%02d", y, m + 1, d)),
+                (v, y, m, d) -> etDate.setText(String.format(Locale.getDefault(), "%04d-%02d-%02d", y, m + 1, d)),
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
                 cal.get(Calendar.DAY_OF_MONTH)
