@@ -1,6 +1,6 @@
 # COMP1786 Expense Tracker
 
-A comprehensive mobile application for tracking project-related expenses, developed as part of the COMP1786 Mobile App Development coursework. This project includes an Android frontend and a Node.js backend.
+A comprehensive mobile application for tracking project-related expenses, developed as part of the COMP1786 Mobile App Development coursework. This project includes an Android Native(Admin) app , Node.js backend and a simple MAUI app(User)
 
 ## 📱 Features
 
