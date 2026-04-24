@@ -24,4 +24,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "ExpenseTracker"
 include ':app'
-include ':mylibrary'
